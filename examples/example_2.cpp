@@ -1,4 +1,4 @@
-#include "timer.hpp"
+#include "timer.hpp" //Do not forget to put the correct path to the header here.
 
 #include <chrono>
 
@@ -25,6 +25,8 @@ private:
     int _a;
 
 };
+
+/*********************************************/
 
 int main(){
 

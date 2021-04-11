@@ -1,7 +1,7 @@
 
 /**
                                 ste::Timer
-    
+
     @short This class provides a thread-based C++ timer that calls a user-defined function.
 
     @details
@@ -100,7 +100,7 @@ class Timer {
 private:
 
     bool _stopped;                       //Current state of the timer.
-    bool _is_single_shot;                //Timer mode (continuous calls to the function or single call after the delay) 
+    bool _is_single_shot;                //Timer mode (continuous calls to the function or single call after the delay)
     std::chrono::milliseconds _ms_delay; //Interval between calls in milliseconds
     Function _function;                  //Function to call
 
@@ -116,15 +116,26 @@ public:
         @details If last argument is not specified, the timer will execute the function until its lifetime expires. Otherwise, it will only be executed one time after the specified delay.
     */
     Timer(Function function,
-          const std::chrono::milliseconds &_delay,
+          const std::chrono::milliseconds &delay,
           const bool &single_shot = true
          )
         :
           _stopped(true),             //ste::Timer is stopped when declared.
           _is_single_shot(single_shot),
-          _ms_delay(_delay),
+          _ms_delay(delay),
           _function(function)
     {};
+
+    /**
+        @brief Alternate constructor. Avoids having to cast delay into std::chrono:milliseconds
+        @details If last argument is not specified, the timer will execute the function until its lifetime expires. Otherwise, it will only be executed one time after the specified delay.
+    */
+    Timer(Function function,
+          const uint64_t &ms_delay,
+          const bool &single_shot = true
+          )
+        : Timer(function , std::chrono::milliseconds(ms_delay) , single_shot)
+    {}
 
 
 
@@ -166,13 +177,32 @@ public:
     bool running() const {return !stopped();}
 
 
+
+
     /**
         @brief Returns the current state of the timer.
-        @return 'true' if the timer is stopped, 'false' otherwise
+        @return Reference to the timer state. 'true' if the timer is stopped, 'false' otherwise.
+        @note You may stop the timer through this function.
     */
-    bool stopped() const{return _stopped;}
+    bool& stopped(){return _stopped;}
+
+    /**
+        @brief Returns the current state of the timer.
+        @return 'const' reference to the timer state. 'true' if the timer is stopped, 'false' otherwise.
+    */
+    const bool& stopped() const{return _stopped;}
 
 
+
+                           /*++++++++++++ ++++++++++++*/
+
+
+    /**
+        @brief Accessor for the attribute holding the execution policy of the timer (single shot or continuous).
+        @return Reference to the attribute. 'true' if the timer is single shot, 'false' otherwise.
+        @note You may change the execution policy through this accessor.
+    */
+    bool& is_single_shot(){return _is_single_shot;}
 
     /**
         @brief Accessor for the attribute holding the execution policy of the timer (single shot or continuous).
@@ -180,18 +210,41 @@ public:
     */
     const bool& is_single_shot() const{return _is_single_shot;}
 
+                           /*++++++++++++ ++++++++++++*/
 
     /**
-        @brief Accessor for the attribute holding the execution policy of the timer (single shot or continuous).
-        @return Reference to the attribute. 'true' if the timer is single shot, 'false' otherwise.
+        @brief Accessor for the attribute holding the delay between two function calls.
+        @return Reference to the attribute. Returns the delay as std::chrono::milliseconds.
+        @note You may change the delay between two calls of the function through this accessor.
     */
-    bool& is_single_shot(){return _is_single_shot;}
+    std::chrono::milliseconds& delay(){return _ms_delay;}
+
+    /**
+        @brief Accessor for the attribute holding the delay between two function calls.
+        @return 'const' reference to the attribute. Returns the delay as std::chrono::milliseconds.
+    */
+    const std::chrono::milliseconds& delay() const{return _ms_delay;}
+
+    /**
+        @brief Accessor for the attribute holding the delay between two function calls.
+        @return Reference to the attribute. Returns the delay as std::chrono::milliseconds.
+        @note You may change the delay between two calls of the function through this accessor.
+    */
+    std::chrono::milliseconds& interval(){return _ms_delay;}
+
+    /**
+        @brief Accessor for the attribute holding the delay between two function calls.
+        @return 'const' reference to the attribute. Returns the delay as std::chrono::milliseconds.
+    */
+    const std::chrono::milliseconds& interval() const{return _ms_delay;}
 
 
+                           /*++++++++++++ ++++++++++++*/
 
     /**
         @brief Accessor for the attribute holding the current function called by the timer.
         @return Reference to the the current function called by the timer.
+        @note You may change the function called through this accessor.
     */
     Function& function(){return _function;}
 
@@ -202,11 +255,15 @@ public:
     const Function& function() const{return _function;}
 
 
+
+
+
+
 protected:
 
     /**
         @brief Launchs a thread that calls periodically the function called by the timer.
-        @details This function is virtual. You may override it in subclasses.
+        @note This function is virtual. You may override it in subclasses.
     */
     virtual void on_run(){
 

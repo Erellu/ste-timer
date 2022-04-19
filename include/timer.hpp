@@ -188,6 +188,12 @@ public:
                 start)
     {}
 
+    /// Destructor. Stops the timer if it is running.
+    inline ~timer()
+    {
+        stop(); // Call loop thread exits at some point after that
+    }
+
     timer(const timer&)            = delete;
     timer(timer&&)                 = delete;
     timer& operator=(const timer&) = delete;

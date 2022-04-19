@@ -1,9 +1,11 @@
-/**
-                                ste::Timer
+/*
+                        ste::timer example 1
 
-    @short This is an example file for this class.
+                 This example demonstrates how to
+                 call change the function called by a ste::timer
+                 from another ste::timer.
 
-     @copyright     Copyright (C) <2020-2021>  DUHAMEL Erwan
+     Copyright (C) <2020-2022>  DUHAMEL Erwan (erwanduhamel@outlook.com)
 
                         BSD-2 License
 
@@ -29,11 +31,10 @@
     LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-     @author DUHAMEL Erwan (erwanduhamel@outlook.com)
 */
 
-#include "timer.hpp" //Do not forget to put the correct path to the header here.
+
+#include "../../include/timer.hpp"
 
 #include <chrono>
 
@@ -41,26 +42,39 @@
 
 #include <iostream>
 
+int main()
+{
+    const std::function<void(void)> f1 = []()
+    {
+        std::cout << "f1" << std::endl;
+    };
 
-int main(){
+    ste::ms_timer<std::function<void(void)>> t1(f1, 500, 0, false);
 
+    const std::function<void(void)> f2 = []()
+    {
+        std::cout << "f2" << std::endl;
+    };
 
-    int a = 0;
+    const std::function f3 = [f1, f2, &t1]()
+    {
+        static bool b = false;
 
-    std::function<void(void)> a_fun = [&a]{std::cout << ++a << std::endl;};
-    std::function<void(void)> b_fun = [&a]{std::cout << (a+=2) << std::endl;};
+        t1.set_function(!b ? f2 : f1);
+        b = !b;
+    };
 
-    ste::Timer t(a_fun , std::chrono::milliseconds(1000) , false);
-    t.start();
+    ste::ms_timer<std::function<void(void)>> t2(f3, 1000, 0, false);
 
+    {
+        std::cout << t1 << std::endl;
+        t1.start();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(2100));
+        std::cout << t2 << std::endl;
+        t2.start();
 
-    t.function() = b_fun;
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2100));
-
-
+        std::this_thread::sleep_for(t1.interval() * 10);
+    }
 
     return 0;
 }

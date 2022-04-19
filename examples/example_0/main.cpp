@@ -1,9 +1,10 @@
-/**
-                                ste::Timer
+/*
+                        ste::timer example 0
 
-    @short This is an example file for this class.
+                 This example demonstrates how to
+                 call a function periodically using a timer.
 
-     @copyright     Copyright (C) <2020-2021>  DUHAMEL Erwan
+     Copyright (C) <2020-2022>  DUHAMEL Erwan (erwanduhamel@outlook.com)
 
                         BSD-2 License
 
@@ -29,32 +30,29 @@
     LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-     @author DUHAMEL Erwan (erwanduhamel@outlook.com)
 */
 
-#include "timer.hpp" //Do not forget to put the correct path to the header here.
+#include "../../include/timer.hpp"
 
 #include <functional>
 
 #include <iostream>
 
+int main()
+{
+    const std::function<void(void)> f1 = []()
+    {
+        static std::uint64_t count = 0;
+        std::cout << ++count << std::endl;
+    };
 
-int main(){
+    ste::ms_timer<std::function<void(void)>> t1(f1, 500, 0, false);
 
-
-    std::function<void(void)> a_fun = []{std::cout << "A" << std::endl;};
-    std::function<void(void)> b_fun = []{std::cout << "B" << std::endl;};
-
-    ste::Timer t(a_fun , std::chrono::milliseconds(1000) , false); //Declare the timer to call 'a_fun' each 1000 milliseconds indefinitely.
-
-    t.start(); //Start the timer
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2100)); //Wait for 2100ms
-
-    t.function() = b_fun; //Change the function called by 't'
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2100)); //Wait for 2100ms
+    {
+        std::cout << t1 << std::endl;
+        t1.start();
+        std::this_thread::sleep_for(t1.interval() * 10);
+    }
 
     return 0;
 }
